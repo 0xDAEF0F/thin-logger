@@ -1,13 +1,13 @@
 [package]
-name = "thin-logger"
+name = "env-logger-wrapper"
 version = "0.1.0"
 edition = "2024"
-description = "A thin logger wrapper around env_logger with customizable formatting and filtering."
+description = "A thin wrapper around env_logger with better formatting. Exports colored, env_logger, and log as re-exports."
 license = "MIT"
+authors = ["Alex T. <aletapia@proton.me>"]
 
 [dependencies]
 env_logger = "0.11.8"
 log = "0.4.27"
-anyhow = "1.0"
 chrono = "0.4.40"
 colored = "3.0.0"

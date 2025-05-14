@@ -1,66 +1,42 @@
-use anyhow::{Context, Result};
-use chrono::Local;
-use colored::*;
-use env_logger::{Builder, WriteStyle};
-use log::LevelFilter;
-use std::io::Write;
+use std::io::Write as _;
 
-pub struct ThinLogger {
-    app_level_logs: LevelFilter,
-    external_level_logs: LevelFilter,
-}
+pub use colored::*;
+pub use env_logger::*;
+pub use log::*;
 
-impl ThinLogger {
-    pub fn new(app_level_logs: LevelFilter) -> Self {
-        ThinLogger {
-            app_level_logs,
-            external_level_logs: LevelFilter::Off,
-        }
-    }
+/// Creates a new `env_logger::Builder` instance with better defaults for
+/// logging.
+pub fn new_builder(log_lvl: LevelFilter) -> Builder {
+    let mut builder = env_logger::builder();
 
-    pub fn external_logs(mut self, level: LevelFilter) -> Self {
-        self.external_level_logs = level;
-        self
-    }
+    builder
+        .format(|buf, record| {
+            let timestamp = chrono::Local::now()
+                .format("%H:%M:%S%p")
+                .to_string()
+                .yellow()
+                .dimmed();
 
-    pub fn init(self) -> Result<()> {
-        let mut builder = Builder::new();
+            let style = buf.default_level_style(record.level());
+            let level_style = format!("{style}{}{style:#}", record.level());
 
-        builder
-            .format(|buf, record| {
-                let timestamp = Local::now()
-                    .format("%H:%M:%S%p")
-                    .to_string()
-                    .yellow()
-                    .dimmed();
-                let style = buf.default_level_style(record.level());
-                let level_style = format!("{style}{}{style:#}", record.level());
+            let target_pretty =
+                record.target().split("::").next().unwrap_or_else(|| record.target());
 
-                let target_pretty = record.target().split("::").next().unwrap();
+            writeln!(
+                buf,
+                "[{}] [{}] [{}]: {}",
+                timestamp,
+                level_style,
+                target_pretty,
+                record.args()
+            )
+        })
+        .format_level(true)
+        .write_style(WriteStyle::Always)
+        .filter(None, log_lvl);
 
-                writeln!(
-                    buf,
-                    "[{}] [{}] [{}]: {}",
-                    timestamp,
-                    level_style,
-                    target_pretty,
-                    record.args()
-                )
-            })
-            .format_level(true)
-            .write_style(WriteStyle::Always);
-
-        if self.external_level_logs != LevelFilter::Off {
-            builder.filter(None, self.external_level_logs);
-        } else {
-            let crate_mod = env!("CARGO_PKG_NAME").replace('-', "_");
-            builder
-                .filter(None, LevelFilter::Off)
-                .filter_module(&crate_mod, self.app_level_logs);
-        }
-
-        builder.try_init().context("Failed to initialize logger")
-    }
+    builder
 }
 
 #[cfg(test)]
@@ -68,13 +44,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_logger_logs() -> Result<()> {
-        ThinLogger::new(LevelFilter::Trace).init()?;
+    fn test_logger_logs() {
+        new_builder(LevelFilter::Trace).init();
         log::trace!("This is a test log");
         log::debug!("This is a test log");
         log::info!("This is a test log");
         log::warn!("This is a test log");
         log::error!("This is a test log");
-        Ok(())
     }
 }
