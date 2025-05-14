@@ -1,6 +1,6 @@
 [package]
 name = "env-logger-wrapper"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A thin wrapper around env_logger with better formatting. Exports colored, env_logger, and log as re-exports."
 license = "MIT"
