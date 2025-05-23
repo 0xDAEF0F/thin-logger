@@ -1,8 +1,8 @@
 [package]
-name = "env-logger-wrapper"
+name = "thin-logger"
 version = "0.1.1"
 edition = "2024"
-description = "A thin wrapper around env_logger with better formatting. Exports colored, env_logger, and log as re-exports."
+description = "A thin wrapper around env_logger with better formatting."
 license = "MIT"
 authors = ["Alex T. <aletapia@proton.me>"]
 

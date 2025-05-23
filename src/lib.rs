@@ -1,13 +1,22 @@
+use colored::*;
+use env_logger::WriteStyle;
+use log::LevelFilter;
 use std::io::Write as _;
 
-pub use colored::*;
-pub use env_logger::*;
-pub use log::*;
+pub use colored;
+pub use env_logger;
+pub use log;
 
-/// Creates a new `env_logger::Builder` instance with better defaults for
-/// logging.
-pub fn new_builder(log_lvl: LevelFilter) -> Builder {
+/// Creates a new `env_logger::Builder` instance with better defaults for logging.
+/// targets: `RUST_LOG=[target][=][level][,...]`
+pub fn build(log_lvl: Option<LevelFilter>) -> env_logger::Builder {
     let mut builder = env_logger::builder();
+
+    builder.parse_env("RUST_LOG");
+
+    if let Some(log_lvl) = log_lvl {
+        builder.filter(None, log_lvl);
+    }
 
     builder
         .format(|buf, record| {
@@ -20,8 +29,11 @@ pub fn new_builder(log_lvl: LevelFilter) -> Builder {
             let style = buf.default_level_style(record.level());
             let level_style = format!("{style}{}{style:#}", record.level());
 
-            let target_pretty =
-                record.target().split("::").next().unwrap_or_else(|| record.target());
+            let target_pretty = record
+                .target()
+                .split("::")
+                .next()
+                .unwrap_or_else(|| record.target());
 
             writeln!(
                 buf,
@@ -33,8 +45,7 @@ pub fn new_builder(log_lvl: LevelFilter) -> Builder {
             )
         })
         .format_level(true)
-        .write_style(WriteStyle::Always)
-        .filter(None, log_lvl);
+        .write_style(WriteStyle::Always);
 
     builder
 }
@@ -44,8 +55,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_logger_logs() {
-        new_builder(LevelFilter::Trace).init();
+    fn test() {
+        build(Some(LevelFilter::Error)).init();
         log::trace!("This is a test log");
         log::debug!("This is a test log");
         log::info!("This is a test log");
