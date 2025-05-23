@@ -21,7 +21,7 @@ pub fn build(log_lvl: Option<LevelFilter>) -> env_logger::Builder {
     builder
         .format(|buf, record| {
             let timestamp = chrono::Local::now()
-                .format("%H:%M:%S%p")
+                .format("%I:%M:%S%p")
                 .to_string()
                 .yellow()
                 .dimmed();
