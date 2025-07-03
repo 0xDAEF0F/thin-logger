@@ -1,8 +1,9 @@
 [package]
 name = "thin-logger"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 description = "A thin wrapper around env_logger with better formatting."
+repository = "https://github.com/0xDAEF0F/thin-logger"
 license = "MIT"
 authors = ["Alex T. <aletapia@proton.me>"]
 
