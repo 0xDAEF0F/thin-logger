@@ -20,12 +20,6 @@ pub fn build(log_lvl: Option<LevelFilter>) -> env_logger::Builder {
 
     builder
         .format(|buf, record| {
-            let timestamp = chrono::Local::now()
-                .format("%I:%M:%S%p")
-                .to_string()
-                .yellow()
-                .dimmed();
-
             let style = buf.default_level_style(record.level());
             let level_style = format!("{style}{}{style:#}", record.level());
 
@@ -35,14 +29,30 @@ pub fn build(log_lvl: Option<LevelFilter>) -> env_logger::Builder {
                 .next()
                 .unwrap_or_else(|| record.target());
 
-            writeln!(
-                buf,
-                "[{}] [{}] [{}]: {}",
-                timestamp,
-                level_style,
-                target_pretty,
-                record.args()
-            )
+            if cfg!(debug_assertions) {
+                writeln!(
+                    buf,
+                    "[{}] [{}]: {}",
+                    level_style,
+                    target_pretty,
+                    record.args()
+                )
+            } else {
+                let timestamp = chrono::Local::now()
+                    .format("%I:%M:%S%p")
+                    .to_string()
+                    .yellow()
+                    .dimmed();
+
+                writeln!(
+                    buf,
+                    "[{}] [{}] [{}]: {}",
+                    timestamp,
+                    level_style,
+                    target_pretty,
+                    record.args()
+                )
+            }
         })
         .format_level(true)
         .write_style(WriteStyle::Always);
